@@ -31,14 +31,35 @@ fs.readdir(process.cwd(), function(err, files){
 
 			i++;
 			if(i == files.length){
-				console.log('');
-				process.stdout.write('	\033[33mEnter your choice: \033[39m');
-				process.stdin.resume(); //wait for user input
-				process.stdin.setEncoding('utf8');
+				read();
 			}else{
 				file(i);
 			}
 		});
+	}
+
+	//read user input when files are shown
+	function read () {
+		console.log('');
+		process.stdout.write('	\033[33mEnter your choice: \033[39m');
+		process.stdin.resume(); //wait for user input
+		process.stdin.setEncoding('utf8');
+
+		process.stdin.on('data', option);
+	}
+
+	//called with the option supplied by the user
+	function option (data) {
+		var filename = files[Number(data)];
+		if(!filename) {
+			process.stdout.write('	\033[31mEnter your choice: \033[39m');
+		} else {
+			process.stdin.pause(); //暂停流（stdin流的默认状态），以便后续做完fs操作后程序能顺利退出
+			fs.readFile(__dirname + '/' + filename, 'utf8', function(err, data){ //指定编码，得到的数据即为相应字符串
+				console.log('');
+				console.log('\033[90m' + data.replace(/(.*)/g, '	$1') + '\033[39m'); //正则表达式添加辅助缩进
+			});
+		}
 	}
 
 	file(0);
